@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – AyurCare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:     #0b1a10;
+      --bg2:    #112318;
+      --card:   #162b1d;
+      --border: #2a4a32;
+      --gold:   #c9a84c;
+      --gold2:  #e8c87a;
+      --green:  #4caf6f;
+      --green2: #81d99e;
+      --text:   #e8f0eb;
+      --muted:  #7a9e85;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,26,16,0.9);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .logo span { color: var(--green2); }
+    nav ul { list-style: none; display: flex; gap: 32px; }
+    nav ul a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--gold); }
+    nav ul a.active { color: var(--green2); }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 50px 24px 100px;
+    }
+
+    /* HEADER */
+    .dash-header {
+      margin-bottom: 40px;
+    }
+    .dash-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .dash-header p { color: var(--muted); font-size: 0.95rem; }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 44px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(76,175,111,0.4); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .stat-card.green::before { background: linear-gradient(90deg, var(--green), var(--green2)); }
+    .stat-card.gold::before  { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+    .stat-card.teal::before  { background: linear-gradient(90deg, #4cb3c9, #81d4e8); }
+    .stat-card.rose::before  { background: linear-gradient(90deg, #c97a7a, #e8a0a0); }
+    .stat-icon { font-size: 2.2rem; margin-bottom: 12px; }
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--gold2);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
+
+    /* TWO COLUMN */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* SECTION CARD */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    .section-card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gold2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* BODY SYSTEM LIST */
+    .system-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .system-item:last-child { border-bottom: none; }
+    .system-name { color: var(--text); font-size: 0.9rem; font-weight: 500; }
+    .system-bar-wrap {
+      flex: 1;
+      margin: 0 14px;
+      height: 6px;
+      background: var(--bg2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .system-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--green2));
+      border-radius: 100px;
+      transition: width 1s ease;
+    }
+    .system-count {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: monospace;
+      min-width: 30px;
+      text-align: right;
+    }
+
+    /* DOSHA PILLS */
+    .dosha-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dosha-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dosha-label {
+      min-width: 120px;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    .dosha-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--bg2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .dosha-bar {
+      height: 100%;
+      border-radius: 100px;
+    }
+    .dosha-bar.vata    { background: linear-gradient(90deg, #c9a84c, #e8c87a); }
+    .dosha-bar.pitta   { background: linear-gradient(90deg, #c97a4c, #e8a07a); }
+    .dosha-bar.kapha   { background: linear-gradient(90deg, #4c9ac9, #7acce8); }
+    .dosha-bar.tri     { background: linear-gradient(90deg, #81d99e, #4caf6f); }
+    .dosha-bar.other   { background: linear-gradient(90deg, #9a7ac9, #c07ae8); }
+    .dosha-count { color: var(--muted); font-size: 0.8rem; min-width: 28px; text-align: right; }
+
+    /* HISTORY */
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .history-syms { color: var(--muted); font-size: 0.82rem; }
+    .history-cond {
+      font-size: 0.88rem;
+      color: var(--green2);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .history-body {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--card);
+      padding: 2px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .empty-history {
+      text-align: center;
+      padding: 30px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* QUICK SEARCH */
+    .quick-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quick-form input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .quick-form input:focus { border-color: var(--green); }
+    .quick-form input::placeholder { color: var(--muted); }
+    .quick-form button {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #3a8f58, #4caf6f);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .quick-form button:hover { opacity: 0.9; }
+
+    /* CONDITIONS TABLE */
+    .conditions-wrap {
+      margin-bottom: 32px;
+    }
+    .conditions-table-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--gold2);
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .filter-btn {
+      padding: 6px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--green);
+      color: var(--green2);
+      background: rgba(76,175,111,0.08);
+    }
+    .cond-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .cond-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .cond-card:hover {
+      border-color: rgba(76,175,111,0.4);
+      transform: translateY(-2px);
+    }
+    .cond-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .cond-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cond-pill {
+      font-size: 0.73rem;
+      padding: 3px 10px;
+      border-radius: 100px;
+      border: 1px solid;
+    }
+    .cond-pill.system { color: var(--green2); border-color: rgba(76,175,111,0.3); background: rgba(76,175,111,0.06); }
+    .cond-pill.syms   { color: var(--muted);  border-color: var(--border); }
+    .cond-pill.dosha  { color: var(--gold2);  border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.05); }
+
+    /* Clear history btn */
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      float: right;
+      margin-top: -8px;
+    }
+    .btn-clear:hover { border-color: #c97a7a; color: #f08080; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.5s ease both; }
+    .fade-in-d { animation: fadeIn 0.5s 0.15s ease both; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Ayur<span>Care</span></div>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/dashboard" class="active">Dashboard</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- HEADER -->
+  <div class="dash-header fade-in">
+    <h1>📊 Dashboard</h1>
+    <p>Overview of the AyurCare database and your session activity</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid fade-in">
+    <div class="stat-card green">
+      <div class="stat-icon">🌿</div>
+      <div class="stat-value">{{ total_conditions }}</div>
+      <div class="stat-label">Conditions in Database</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">🩺</div>
+      <div class="stat-value">{{ total_symptoms }}</div>
+      <div class="stat-label">Unique Symptoms</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-icon">📜</div>
+      <div class="stat-value">{{ total_remedies }}</div>
+      <div class="stat-label">Total Remedies</div>
+    </div>
+    <div class="stat-card rose">
+      <div class="stat-icon">🔍</div>
+      <div class="stat-value">{{ history | length }}</div>
+      <div class="stat-label">Searches This Session</div>
+    </div>
+  </div>
+
+  <!-- TWO COLUMN: Body Systems + Dosha -->
+  <div class="two-col fade-in-d">
+
+    <!-- Body Systems -->
+    <div class="section-card">
+      <div class="section-card-title">🫀 Conditions by Body System</div>
+      {% for system, conds in by_system | dictsort %}
+      <div class="system-item">
+        <span class="system-name">{{ system }}</span>
+        <div class="system-bar-wrap">
+          <div class="system-bar" style="width: {{ (conds | length / max_system_count * 100) | int }}%"></div>
+        </div>
+        <span class="system-count">{{ conds | length }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Dosha + History + Quick Search -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- Dosha -->
+      <div class="section-card">
+        <div class="section-card-title">🔥 Dosha Distribution</div>
+        <div class="dosha-grid">
+          {% for dosha, count in dosha_count | dictsort(by='value', reverse=True) %}
+          <div class="dosha-item">
+            <span class="dosha-label">{{ dosha }}</span>
+            <div class="dosha-bar-wrap">
+              <div class="dosha-bar
+                {% if 'Vata' in dosha and 'Pitta' not in dosha and 'Kapha' not in dosha %}vata
+                {% elif 'Pitta' in dosha and 'Vata' not in dosha and 'Kapha' not in dosha %}pitta
+                {% elif 'Kapha' in dosha and 'Vata' not in dosha and 'Pitta' not in dosha %}kapha
+                {% elif 'Tridoshic' in dosha %}tri
+                {% else %}other{% endif %}"
+                style="width: {{ (count / max_dosha_count * 100) | int }}%">
+              </div>
+            </div>
+            <span class="dosha-count">{{ count }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Quick Search -->
+      <div class="section-card">
+        <div class="section-card-title">🔍 Quick Search</div>
+        <form action="/predict" method="post" class="quick-form">
+          <input type="text" name="symptoms" placeholder="Type symptoms, comma separated..." required/>
+          <button type="submit">Go →</button>
+        </form>
+      </div>
+
+      <!-- Session History -->
+      <div class="section-card">
+        <div class="section-card-title">
+          🕑 Recent Searches
+          {% if history %}
+          <button class="btn-clear" onclick="clearHistory()">🗑 Clear</button>
+          {% endif %}
+        </div>
+        <div class="history-list">
+          {% if not history %}
+          <div class="empty-history">No searches yet this session.<br>Go to <a href="/" style="color:var(--green2)">Home</a> to start.</div>
+          {% else %}
+            {% for h in history %}
+            <div class="history-item">
+              <span class="history-syms">{{ h.symptoms | join(', ') | truncate(32) }}</span>
+              <span class="history-cond">{{ h.condition | truncate(24) }}</span>
+              <span class="history-body">{{ h.body_system }}</span>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONDITIONS BROWSER -->
+  <div class="conditions-wrap fade-in-d">
+    <div class="conditions-table-title">🌿 Browse All Conditions</div>
+
+    <!-- Filter by body system -->
+    <div class="filter-row" id="filterRow">
+      <button class="filter-btn active" onclick="filterConds('all', this)">All</button>
+      {% for system in by_system.keys() | sort %}
+      <button class="filter-btn" onclick="filterConds('{{ system }}', this)">{{ system }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="cond-grid" id="condGrid">
+      {% for system, conds in by_system | dictsort %}
+        {% for cond in conds %}
+        <div class="cond-card" data-system="{{ system }}">
+          <div class="cond-name">{{ cond.name }}</div>
+          <div class="cond-meta">
+            <span class="cond-pill system">{{ system }}</span>
+            <span class="cond-pill syms">{{ cond.symptoms_count }} symptoms</span>
+            <span class="cond-pill dosha">{{ cond.dosha | truncate(18, True, '') }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  AyurCare &copy; 2024 &nbsp;·&nbsp; Data sourced from Ayurveda Encyclopedia · Charaka Samhita · Ministry of AYUSH &nbsp;·&nbsp; <a href="/">Home</a>
+</footer>
+
+<script>
+  function filterConds(system, btn) {
+    const cards = document.querySelectorAll('.cond-card');
+    cards.forEach(c => {
+      if (system === 'all' || c.dataset.system === system) {
+        c.style.display = 'block';
+      } else {
+        c.style.display = 'none';
+      }
+    });
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function clearHistory() {
+    fetch('/clear-history').then(() => location.reload());
+  }
+</script>
+</body>
+</html>

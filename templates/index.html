@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AyurCare – Ayurvedic Remedy Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0b1a10;
+      --bg2:      #112318;
+      --card:     #162b1d;
+      --border:   #2a4a32;
+      --gold:     #c9a84c;
+      --gold2:    #e8c87a;
+      --green:    #4caf6f;
+      --green2:   #81d99e;
+      --text:     #e8f0eb;
+      --muted:    #7a9e85;
+      --danger:   #e05c5c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background decorative circles */
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(76,175,111,0.06) 0%, transparent 70%);
+      top: -200px; right: -200px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,26,16,0.9);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .logo span { color: var(--green2); }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 32px;
+    }
+    nav ul a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--gold); }
+    nav ul a.active { color: var(--green2); }
+
+    /* HERO */
+    .hero {
+      max-width: 860px;
+      margin: 80px auto 0;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold2);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+    .hero-badge::before { content: '🌿'; font-size: 0.85rem; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    h1 em {
+      color: var(--gold);
+      font-style: italic;
+    }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 580px;
+      margin: 0 auto 50px;
+    }
+
+    /* SEARCH CARD */
+    .search-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 680px;
+      margin: 0 auto 40px;
+      position: relative;
+    }
+    .search-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 21px;
+      background: linear-gradient(135deg, rgba(201,168,76,0.2), transparent, rgba(76,175,111,0.15));
+      z-index: -1;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .input-wrap input {
+      width: 100%;
+      padding: 16px 20px 16px 50px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-wrap input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(76,175,111,0.12);
+    }
+    .input-wrap input::placeholder { color: var(--muted); }
+    .input-icon {
+      position: absolute;
+      left: 17px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    /* Autocomplete */
+    .autocomplete-list {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #1a3325;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      z-index: 50;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    .autocomplete-list.open { display: block; }
+    .autocomplete-list li {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+      list-style: none;
+    }
+    .autocomplete-list li:hover, .autocomplete-list li.selected {
+      background: rgba(76,175,111,0.15);
+      color: var(--green2);
+    }
+    .autocomplete-list li .match { color: var(--gold2); font-weight: 600; }
+
+    .input-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .btn-check {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #3a8f58, #4caf6f);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-check:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-check:active { transform: translateY(0); }
+
+    /* ERROR */
+    .error-msg {
+      background: rgba(224,92,92,0.1);
+      border: 1px solid rgba(224,92,92,0.3);
+      color: #f08080;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+    }
+
+    /* POPULAR TAGS */
+    .popular-section {
+      max-width: 680px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+    .popular-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .tag {
+      padding: 7px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag:hover {
+      border-color: var(--green);
+      color: var(--green2);
+      background: rgba(76,175,111,0.08);
+    }
+
+    /* FEATURES STRIP */
+    .features {
+      max-width: 900px;
+      margin: 0 auto 100px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(76,175,111,0.4);
+    }
+    .feature-icon { font-size: 2rem; margin-bottom: 12px; }
+    .feature-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold2);
+      margin-bottom: 8px;
+    }
+    .feature-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.6s ease both; }
+    .fade-in-delay { animation: fadeIn 0.6s 0.2s ease both; }
+    .fade-in-delay2 { animation: fadeIn 0.6s 0.4s ease both; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Ayur<span>Care</span></div>
+    <ul>
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero fade-in">
+    <div class="hero-badge">Ancient Wisdom · Modern Interface</div>
+    <h1>Find Your <em>Ayurvedic</em><br>Remedy Instantly</h1>
+    <p class="hero-sub">
+      Enter your symptoms and discover time-tested Ayurvedic home remedies rooted in classical texts like Charaka Samhita — trusted for thousands of years.
+    </p>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="search-card fade-in-delay">
+    <form action="/predict" method="post">
+
+      {% if error %}
+      <div class="error-msg">⚠️ {{ error }}</div>
+      {% endif %}
+
+      <div class="input-wrap">
+        <span class="input-icon">🔍</span>
+        <input
+          type="text"
+          name="symptoms"
+          id="symptomInput"
+          placeholder="e.g. fever, headache, bloating..."
+          autocomplete="off"
+          required
+        />
+        <ul class="autocomplete-list" id="autocompleteList"></ul>
+      </div>
+
+      <p class="input-hint">Separate multiple symptoms with commas</p>
+      <button type="submit" class="btn-check">
+        <span>🌿</span> Find Ayurvedic Remedies
+      </button>
+    </form>
+  </div>
+
+  <!-- POPULAR -->
+  <div class="popular-section fade-in-delay2">
+    <p class="popular-label">Popular Searches</p>
+    <div class="tags">
+      {% for sym in popular_symptoms %}
+      <span class="tag" onclick="addSymptom('{{ sym }}')">{{ sym }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="feature-card fade-in">
+      <div class="feature-icon">📚</div>
+      <div class="feature-title">10,000+ Records</div>
+      <div class="feature-desc">Sourced from the Ayurveda Encyclopedia and classical Charaka Samhita texts.</div>
+    </div>
+    <div class="feature-card fade-in-delay">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Smart Matching</div>
+      <div class="feature-desc">Our engine ranks 77 conditions across 105 symptoms for the most accurate match.</div>
+    </div>
+    <div class="feature-card fade-in-delay2">
+      <div class="feature-icon">🌿</div>
+      <div class="feature-title">Dosha Aware</div>
+      <div class="feature-desc">Remedies are categorised by Vata, Pitta, and Kapha dosha types for personalised guidance.</div>
+    </div>
+  </div>
+
+  <footer>
+    AyurCare &copy; 2024 &nbsp;·&nbsp; For informational purposes only. Always consult a qualified Ayurvedic practitioner for medical advice. &nbsp;·&nbsp; <a href="/dashboard">Dashboard</a>
+  </footer>
+
+  <script>
+    const allSymptoms = {{ all_symptoms | tojson }};
+    const input = document.getElementById('symptomInput');
+    const list = document.getElementById('autocompleteList');
+
+    function getLastTerm() {
+      const val = input.value;
+      const parts = val.split(',');
+      return parts[parts.length - 1].trim().toLowerCase();
+    }
+
+    function replaceLastTerm(replacement) {
+      const val = input.value;
+      const parts = val.split(',');
+      parts[parts.length - 1] = ' ' + replacement;
+      input.value = parts.join(',').replace(/^\s+/, '') + ', ';
+    }
+
+    function addSymptom(sym) {
+      const val = input.value.trim();
+      if (!val) {
+        input.value = sym + ', ';
+      } else {
+        const last = val.endsWith(',') ? val + ' ' + sym + ', ' : val + ', ' + sym + ', ';
+        input.value = last;
+      }
+      input.focus();
+    }
+
+    let selectedIdx = -1;
+
+    input.addEventListener('input', () => {
+      const term = getLastTerm();
+      selectedIdx = -1;
+      if (term.length < 2) { list.classList.remove('open'); return; }
+      const matches = allSymptoms.filter(s => s.includes(term)).slice(0, 8);
+      if (!matches.length) { list.classList.remove('open'); return; }
+      list.innerHTML = matches.map(m => {
+        const hl = m.replace(new RegExp(`(${term})`, 'gi'), '<span class="match">$1</span>');
+        return `<li onclick="replaceLastTerm('${m}')">${hl}</li>`;
+      }).join('');
+      list.classList.add('open');
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = list.querySelectorAll('li');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIdx = Math.min(selectedIdx + 1, items.length - 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIdx = Math.max(selectedIdx - 1, -1);
+      } else if (e.key === 'Enter' && selectedIdx >= 0) {
+        e.preventDefault();
+        replaceLastTerm(items[selectedIdx].textContent);
+        list.classList.remove('open');
+        return;
+      } else if (e.key === 'Escape') {
+        list.classList.remove('open'); return;
+      }
+      items.forEach((el, i) => el.classList.toggle('selected', i === selectedIdx));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.input-wrap')) list.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

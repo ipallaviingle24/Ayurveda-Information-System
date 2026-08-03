@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results – AyurCare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:     #0b1a10;
+      --bg2:    #112318;
+      --card:   #162b1d;
+      --border: #2a4a32;
+      --gold:   #c9a84c;
+      --gold2:  #e8c87a;
+      --green:  #4caf6f;
+      --green2: #81d99e;
+      --text:   #e8f0eb;
+      --muted:  #7a9e85;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(76,175,111,0.07) 0%, transparent 70%);
+      top: -150px; right: -150px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,26,16,0.9);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .logo span { color: var(--green2); }
+    nav ul { list-style: none; display: flex; gap: 32px; }
+    nav ul a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--gold); }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 50px 24px 100px;
+    }
+
+    /* NO MATCH */
+    .no-match {
+      text-align: center;
+      padding: 80px 0;
+    }
+    .no-match .icon { font-size: 4rem; margin-bottom: 20px; }
+    .no-match h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .no-match p { color: var(--muted); font-size: 1rem; line-height: 1.7; }
+
+    /* HEADER */
+    .result-header {
+      margin-bottom: 40px;
+    }
+    .breadcrumb {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .breadcrumb a { color: var(--green2); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .searched-symptoms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sym-tag {
+      padding: 5px 14px;
+      background: rgba(76,175,111,0.1);
+      border: 1px solid rgba(76,175,111,0.3);
+      border-radius: 100px;
+      color: var(--green2);
+      font-size: 0.82rem;
+    }
+    .result-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .result-header .sub { color: var(--muted); font-size: 0.95rem; }
+
+    /* RESULTS TABS */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active {
+      border-bottom-color: var(--green);
+      color: var(--green2);
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+    /* PRIMARY RESULT CARD */
+    .primary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .primary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--gold));
+    }
+    .condition-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--gold2);
+      margin-bottom: 14px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .meta-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .meta-pill .label { color: var(--text); font-weight: 500; }
+
+    /* Remedies */
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .remedies-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .remedy-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .remedy-item:hover { border-color: rgba(76,175,111,0.4); }
+    .remedy-num {
+      background: rgba(76,175,111,0.15);
+      color: var(--green2);
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .remedy-text {
+      font-size: 0.93rem;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    /* Medicines */
+    .meds-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .med-tag {
+      padding: 6px 16px;
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 100px;
+      color: var(--gold2);
+      font-size: 0.83rem;
+      font-weight: 500;
+    }
+
+    /* Contraindications */
+    .contra-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .contra-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #f0a080;
+    }
+    .contra-item::before { content: '⚠️'; font-size: 0.85rem; }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* OTHER MATCHES */
+    .other-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+    .other-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 14px;
+      cursor: default;
+      transition: border-color 0.2s;
+    }
+    .other-card:hover { border-color: rgba(201,168,76,0.3); }
+    .other-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      color: var(--gold2);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .other-remedies { color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+
+    /* ACTIONS */
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 36px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 24px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3a8f58, #4caf6f);
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--green); color: var(--green2); }
+
+    /* DISCLAIMER */
+    .disclaimer {
+      background: rgba(201,168,76,0.06);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: #b8956a;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin-top: 30px;
+    }
+    .disclaimer strong { color: var(--gold2); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Ayur<span>Care</span></div>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  {% if no_match %}
+  <!-- NO MATCH -->
+  <div class="no-match">
+    <div class="icon">🌿</div>
+    <h2>No Match Found</h2>
+    <p>
+      We couldn't find a close match for:<br>
+      <strong style="color:var(--text)">{{ user_symptoms | join(', ') }}</strong>
+    </p>
+    <p style="margin-top:14px">Try different or more specific symptoms, or consult a qualified Ayurvedic practitioner.</p>
+    <div class="actions" style="justify-content:center; margin-top:30px">
+      <a href="/" class="btn btn-primary">🔍 Try Again</a>
+      <a href="/dashboard" class="btn btn-outline">📊 Dashboard</a>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- RESULTS -->
+  <div class="result-header">
+    <div class="breadcrumb"><a href="/">Home</a> → Results</div>
+    <div class="searched-symptoms">
+      {% for sym in user_symptoms %}
+        <span class="sym-tag">🌿 {{ sym }}</span>
+      {% endfor %}
+    </div>
+    <h1>Ayurvedic Remedies Found</h1>
+    <p class="sub">Showing best matches from our database of 77 conditions · Sorted by relevance</p>
+  </div>
+
+  <!-- TABS for multiple results -->
+  {% if results | length > 1 %}
+  <div class="tabs">
+    {% for r in results %}
+    <button class="tab-btn {% if loop.first %}active{% endif %}"
+            onclick="showTab({{ loop.index0 }}, this)">
+      {% if loop.first %}⭐ Best Match{% else %}Alt. {{ loop.index }}{% endif %}:
+      {{ r.condition | truncate(22, True, '…') }}
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% for r in results %}
+  <div class="tab-panel {% if loop.first %}active{% endif %}" id="tab-{{ loop.index0 }}">
+    <div class="primary-card">
+
+      <div class="condition-name">{{ r.condition }}</div>
+
+      <!-- Meta -->
+      <div class="meta-row">
+        <div class="meta-pill">🔥 Dosha: <span class="label">{{ r.dosha }}</span></div>
+        <div class="meta-pill">🫀 System: <span class="label">{{ r.body_system }}</span></div>
+        <div class="meta-pill">⏱ Type: <span class="label">{{ r.chronic_acute }}</span></div>
+        <div class="meta-pill">🌤 Season: <span class="label">{{ r.seasonal }}</span></div>
+        {% if r.matched_symptoms %}
+        <div class="meta-pill">✅ Matched: <span class="label">{{ r.matched_symptoms | join(', ') | truncate(40) }}</span></div>
+        {% endif %}
+      </div>
+
+      <!-- Remedies -->
+      <div class="section-title">🌿 Home Remedies</div>
+      <ul class="remedies-list">
+        {% for remedy in r.remedies %}
+        <li class="remedy-item">
+          <span class="remedy-num">{{ loop.index }}</span>
+          <span class="remedy-text">{{ remedy }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <hr class="divider"/>
+
+      <!-- Medicines -->
+      {% if r.medicines %}
+      <div class="section-title">💊 Ayurvedic Medicines</div>
+      <div class="meds-grid">
+        {% for med in r.medicines %}
+        <span class="med-tag">{{ med }}</span>
+        {% endfor %}
+      </div>
+      <hr class="divider"/>
+      {% endif %}
+
+      <!-- Contraindications -->
+      {% if r.contraindications %}
+      <div class="section-title">⚠️ Precautions / Contraindications</div>
+      <ul class="contra-list">
+        {% for c in r.contraindications %}
+        <li class="contra-item">{{ c }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <a href="/" class="btn btn-primary">🔍 Search Again</a>
+    <a href="/dashboard" class="btn btn-outline">📊 Dashboard</a>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> These remedies are based on traditional Ayurvedic knowledge from classical texts (Charaka Samhita, Sushruta Samhita) and the Ayurveda Encyclopedia. They are for informational purposes only. Please consult a qualified Ayurvedic practitioner or doctor before use, especially for chronic or serious conditions.
+  </div>
+
+  {% endif %}
+
+</main>
+
+<footer>
+  AyurCare &copy; 2024 &nbsp;·&nbsp; Endorsed by Ministry of AYUSH · WHO Traditional Medicine Strategy 2014–2023 &nbsp;·&nbsp; <a href="/dashboard">Dashboard</a>
+</footer>
+
+<script>
+  function showTab(idx, btn) {
+    document.querySelectorAll('.tab-panel').forEach((p, i) => {
+      p.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
